@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Webhook</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        #log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .error {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .info {
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Тест Webhook для переписки</h1>
+        <p>Нажмите кнопки для создания тестовых сообщений в базе данных:</p>
+        
+        <button onclick="sendDialog(1)">📤 Сообщение #1</button>
+        <button onclick="sendDialog(2)">📤 Сообщение #2</button>
+        <button onclick="sendDialog(3)">📤 Сообщение #3</button>
+        <button onclick="sendDialog(4)">📤 Сообщение #4</button>
+        <button onclick="sendDialog(5)">📤 Сообщение #5</button>
+        <button onclick="sendAllDialogs()">🚀 Отправить всё</button>
+        <button onclick="clearLog()">🗑️ Очистить лог</button>
+        
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = 'https://functions.poehali.dev/f62e29ad-f517-47b1-aafd-269884a49479';
+        
+        const dialogs = [
+            {
+                telegram_id: 999888777,
+                name: 'Иван Тестовый',
+                username: 'ivan_test',
+                email: 'ivan@test.ru',
+                premium: true,
+                tokens: 1200,
+                model: 'GPT-4',
+                user_message: 'Привет! Как создать телеграм бота на Python?',
+                assistant_message: 'Привет! Для создания телеграм бота на Python тебе понадобится библиотека python-telegram-bot. Вот базовый пример:\n\n```python\nfrom telegram import Update\nfrom telegram.ext import Application, CommandHandler\n\nasync def start(update, context):\n    await update.message.reply_text("Привет!")\n\napp = Application.builder().token("YOUR_TOKEN").build()\napp.add_handler(CommandHandler("start", start))\napp.run_polling()\n```\n\nУстанови библиотеку: pip install python-telegram-bot'
+            },
+            {
+                telegram_id: 999888777,
+                name: 'Иван Тестовый',
+                username: 'ivan_test',
+                premium: true,
+                tokens: 850,
+                model: 'GPT-4',
+                user_message: 'А как добавить кнопки в бота?',
+                assistant_message: 'Для добавления кнопок используй InlineKeyboardMarkup:\n\n```python\nfrom telegram import InlineKeyboardButton, InlineKeyboardMarkup\n\nkeyboard = [\n    [InlineKeyboardButton("Кнопка 1", callback_data="1")],\n    [InlineKeyboardButton("Кнопка 2", callback_data="2")]\n]\nreply_markup = InlineKeyboardMarkup(keyboard)\nawait update.message.reply_text("Выбери:", reply_markup=reply_markup)\n```\n\nТакже добавь обработчик CallbackQueryHandler для обработки нажатий.'
+            },
+            {
+                telegram_id: 999888777,
+                name: 'Иван Тестовый',
+                username: 'ivan_test',
+                premium: true,
+                tokens: 950,
+                model: 'openai/gpt-4.1-mini',
+                user_message: 'Как подключить базу данных к боту?',
+                assistant_message: 'Рекомендую использовать SQLite для простых проектов или PostgreSQL для продакшена. Пример с SQLite:\n\n```python\nimport sqlite3\n\nconn = sqlite3.connect("bot.db")\ncursor = conn.cursor()\n\ncursor.execute("""\n    CREATE TABLE IF NOT EXISTS users (\n        user_id INTEGER PRIMARY KEY,\n        username TEXT,\n        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n    )\n""")\n\nconn.commit()\n```\n\nДля PostgreSQL используй библиотеку psycopg2 или asyncpg для асинхронной работы.'
+            },
+            {
+                telegram_id: 999888777,
+                name: 'Иван Тестовый',
+                username: 'ivan_test',
+                premium: true,
+                tokens: 1100,
+                model: 'GPT-4',
+                user_message: 'Можно ли добавить оплату в бота?',
+                assistant_message: 'Да! В Telegram есть встроенная система платежей. Основные способы:\n\n1. **Telegram Payments API** - принимай платежи через провайдеров (Stripe, ЮKassa и др.)\n2. **Криптовалюта** - TON, Bitcoin через внешние сервисы\n3. **Электронные кошельки** - Robokassa, PayPal\n\nПример с Telegram Payments:\n```python\nfrom telegram import LabeledPrice\n\nawait context.bot.send_invoice(\n    chat_id=update.effective_chat.id,\n    title="Премиум доступ",\n    description="Месяц премиум подписки",\n    payload="premium_month",\n    provider_token=PAYMENT_TOKEN,\n    currency="RUB",\n    prices=[LabeledPrice("Подписка", 50000)]  # 500 руб\n)\n```'
+            },
+            {
+                telegram_id: 999888777,
+                name: 'Иван Тестовый',
+                username: 'ivan_test',
+                premium: true,
+                tokens: 750,
+                model: 'GPT-4',
+                user_message: 'Спасибо за помощь! 🚀',
+                assistant_message: 'Пожалуйста! Рад был помочь! 😊\n\nЕсли будут ещё вопросы по разработке бота - обращайся. Удачи с проектом! 🎉\n\nP.S. Не забудь протестировать бота перед запуском в продакшен и добавить обработку ошибок.'
+            }
+        ];
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString('ru-RU');
+            const className = type;
+            logDiv.innerHTML += `<div class="${className}">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function sendDialog(index) {
+            const dialog = dialogs[index - 1];
+            log(`Отправка сообщения #${index}...`, 'info');
+            
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dialog)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Сообщение #${index} успешно отправлено! Dialog ID: ${result.dialog_id}`, 'success');
+                } else {
+                    log(`❌ Ошибка при отправке #${index}: ${JSON.stringify(result)}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Ошибка сети #${index}: ${error.message}`, 'error');
+            }
+        }
+
+        async function sendAllDialogs() {
+            log('🚀 Начинаю отправку всех сообщений...', 'info');
+            for (let i = 1; i <= dialogs.length; i++) {
+                await sendDialog(i);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            log('🎉 Все сообщения отправлены!', 'success');
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        log('✨ Готов к отправке тестовых данных', 'info');
+    </script>
+</body>
+</html>
