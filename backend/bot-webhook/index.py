@@ -35,10 +35,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         telegram_id = body_data.get('telegram_id')
         name = body_data.get('name', 'Пользователь')
+        username = body_data.get('username')
         tokens = body_data.get('tokens', 0)
         model = body_data.get('model', 'GPT-3.5')
         premium = body_data.get('premium', False)
         email = body_data.get('email')
+        user_message = body_data.get('user_message')
+        assistant_message = body_data.get('assistant_message')
+        interaction_type = body_data.get('interaction_type', 'chat')
         
         if not telegram_id:
             return {
@@ -63,19 +67,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             new_dialogs_count = user['dialogs_count'] + 1
             
             cur.execute(
-                "UPDATE users SET total_tokens = %s, dialogs_count = %s, last_active = %s, premium = %s WHERE id = %s",
-                (new_total_tokens, new_dialogs_count, datetime.now(), premium, user_id)
+                "UPDATE users SET total_tokens = %s, dialogs_count = %s, last_active = %s, premium = %s, username = %s WHERE id = %s",
+                (new_total_tokens, new_dialogs_count, datetime.now(), premium, username, user_id)
             )
         else:
             cur.execute(
-                "INSERT INTO users (telegram_id, name, email, premium, total_tokens, dialogs_count, last_active) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
-                (telegram_id, name, email, premium, tokens, 1, datetime.now())
+                "INSERT INTO users (telegram_id, name, username, email, premium, total_tokens, dialogs_count, last_active) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                (telegram_id, name, username, email, premium, tokens, 1, datetime.now())
             )
             user_id = cur.fetchone()['id']
         
         cur.execute(
-            "INSERT INTO dialogs (user_id, telegram_id, tokens, model, status, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
-            (user_id, telegram_id, tokens, model, 'Завершён', datetime.now(), datetime.now())
+            "INSERT INTO dialogs (user_id, telegram_id, username, tokens, model, status, user_message, assistant_message, interaction_type, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+            (user_id, telegram_id, username, tokens, model, 'Завершён', user_message, assistant_message, interaction_type, datetime.now(), datetime.now())
         )
         dialog_id = cur.fetchone()['id']
         
