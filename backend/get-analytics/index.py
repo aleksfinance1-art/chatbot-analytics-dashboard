@@ -61,7 +61,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         for stat in token_stats:
             stat['date'] = stat['date'].strftime('%d.%m')
         
-        dialog_query = "SELECT d.id, u.name as user, d.created_at, d.tokens, d.model, d.status, u.premium FROM dialogs d JOIN users u ON d.user_id = u.id WHERE 1=1"
+        dialog_query = "SELECT d.id, u.name as user, u.username, d.telegram_id, d.created_at, d.tokens, d.model, d.status, u.premium, d.user_message, d.assistant_message, d.interaction_type FROM dialogs d JOIN users u ON d.user_id = u.id WHERE 1=1"
         query_params = []
         
         if filter_model != 'all':
@@ -81,7 +81,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             dialog['date'] = dialog['created_at'].strftime('%d.%m.%Y %H:%M')
             del dialog['created_at']
         
-        cur.execute("SELECT id, name, email, total_tokens, dialogs_count, premium, last_active FROM users ORDER BY total_tokens DESC")
+        cur.execute("SELECT id, telegram_id, name, username, email, total_tokens, dialogs_count, premium, last_active FROM users ORDER BY total_tokens DESC")
         users = [dict(row) for row in cur.fetchall()]
         
         for user in users:
