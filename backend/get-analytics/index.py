@@ -53,8 +53,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         start_date = datetime.now().date() - timedelta(days=days-1)
         cur.execute(
-            "SELECT date, total_tokens, active_users FROM token_stats WHERE date >= %s ORDER BY date",
-            (start_date,)
+            "SELECT date, total_tokens, active_users FROM token_stats WHERE date >= '" + str(start_date) + "' ORDER BY date"
         )
         token_stats = [dict(row) for row in cur.fetchall()]
         
@@ -74,7 +73,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         dialog_query += " ORDER BY d.created_at DESC LIMIT 100"
         
-        cur.execute(dialog_query, query_params)
+        if query_params:
+            for param in query_params:
+                dialog_query = dialog_query.replace('%s', "'" + param.replace("'", "''") + "'", 1)
+        cur.execute(dialog_query)
         dialogs = [dict(row) for row in cur.fetchall()]
         
         for dialog in dialogs:

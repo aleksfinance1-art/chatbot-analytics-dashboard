@@ -56,8 +56,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
         cur.execute(
-            "SELECT id, total_tokens, dialogs_count FROM users WHERE telegram_id = %s",
-            (telegram_id,)
+            "SELECT id, total_tokens, dialogs_count FROM users WHERE telegram_id = " + str(telegram_id)
         )
         user = cur.fetchone()
         
@@ -67,44 +66,37 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             new_dialogs_count = user['dialogs_count'] + 1
             
             cur.execute(
-                "UPDATE users SET total_tokens = %s, dialogs_count = %s, last_active = %s, premium = %s, username = %s WHERE id = %s",
-                (new_total_tokens, new_dialogs_count, datetime.now(), premium, username, user_id)
+                "UPDATE users SET total_tokens = " + str(new_total_tokens) + ", dialogs_count = " + str(new_dialogs_count) + ", last_active = '" + datetime.now().isoformat() + "', premium = " + str(premium) + ", username = '" + (username.replace("'", "''") if username else '') + "' WHERE id = " + str(user_id)
             )
         else:
             cur.execute(
-                "INSERT INTO users (telegram_id, name, username, email, premium, total_tokens, dialogs_count, last_active) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
-                (telegram_id, name, username, email, premium, tokens, 1, datetime.now())
+                "INSERT INTO users (telegram_id, name, username, email, premium, total_tokens, dialogs_count, last_active) VALUES (" + str(telegram_id) + ", '" + name.replace("'", "''") + "', '" + (username.replace("'", "''") if username else '') + "', " + ("'" + email.replace("'", "''") + "'" if email else 'NULL') + ", " + str(premium) + ", " + str(tokens) + ", 1, '" + datetime.now().isoformat() + "') RETURNING id"
             )
             user_id = cur.fetchone()['id']
         
         cur.execute(
-            "INSERT INTO dialogs (user_id, telegram_id, username, tokens, model, status, user_message, assistant_message, interaction_type, created_at, updated_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
-            (user_id, telegram_id, username, tokens, model, 'Завершён', user_message, assistant_message, interaction_type, datetime.now(), datetime.now())
+            "INSERT INTO dialogs (user_id, telegram_id, username, tokens, model, status, user_message, assistant_message, interaction_type, created_at, updated_at) VALUES (" + str(user_id) + ", " + str(telegram_id) + ", '" + (username.replace("'", "''") if username else '') + "', " + str(tokens) + ", '" + model.replace("'", "''") + "', 'Завершён', " + ("'" + user_message.replace("'", "''") + "'" if user_message else 'NULL') + ", " + ("'" + assistant_message.replace("'", "''") + "'" if assistant_message else 'NULL') + ", '" + interaction_type.replace("'", "''") + "', '" + datetime.now().isoformat() + "', '" + datetime.now().isoformat() + "') RETURNING id"
         )
         dialog_id = cur.fetchone()['id']
         
         today = datetime.now().date()
         cur.execute(
-            "SELECT id, total_tokens, active_users FROM token_stats WHERE date = %s",
-            (today,)
+            "SELECT id, total_tokens, active_users FROM token_stats WHERE date = '" + str(today) + "'"
         )
         stats = cur.fetchone()
         
         if stats:
             cur.execute(
-                "UPDATE token_stats SET total_tokens = total_tokens + %s WHERE date = %s",
-                (tokens, today)
+                "UPDATE token_stats SET total_tokens = total_tokens + " + str(tokens) + " WHERE date = '" + str(today) + "'"
             )
         else:
             cur.execute(
-                "SELECT COUNT(DISTINCT telegram_id) as count FROM dialogs WHERE DATE(created_at) = %s",
-                (today,)
+                "SELECT COUNT(DISTINCT telegram_id) as count FROM dialogs WHERE DATE(created_at) = '" + str(today) + "'"
             )
             active_count = cur.fetchone()['count']
             
             cur.execute(
-                "INSERT INTO token_stats (date, total_tokens, active_users) VALUES (%s, %s, %s)",
-                (today, tokens, active_count)
+                "INSERT INTO token_stats (date, total_tokens, active_users) VALUES ('" + str(today) + "', " + str(tokens) + ", " + str(active_count) + ")"
             )
         
         conn.commit()
