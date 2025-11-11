@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
@@ -50,6 +51,8 @@ const Index = () => {
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [selectedDialog, setSelectedDialog] = useState<any>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchAnalytics();
@@ -84,7 +87,8 @@ const Index = () => {
   const summary = analyticsData?.summary || { totalUsers: 0, premiumUsers: 0, activeDialogs: 0, totalTokens: 0 };
 
   const filteredDialogs = dialogs.filter((dialog: any) => {
-    const matchesSearch = dialog.user.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = dialog.user.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         (dialog.username && dialog.username.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesModel = filterModel === 'all' || dialog.model === filterModel;
     const matchesStatus = filterStatus === 'all' || dialog.status === filterStatus;
     return matchesSearch && matchesModel && matchesStatus;
@@ -92,8 +96,18 @@ const Index = () => {
 
   const exportToCSV = () => {
     const csv = [
-      ['Пользователь', 'Дата', 'Токены', 'Модель', 'Статус', 'Премиум'],
-      ...filteredDialogs.map(d => [d.user, d.date, d.tokens, d.model, d.status, d.premium ? 'Да' : 'Нет'])
+      ['Пользователь', 'Username', 'Дата', 'Токены', 'Модель', 'Статус', 'Премиум', 'Вопрос', 'Ответ'],
+      ...filteredDialogs.map(d => [
+        d.user, 
+        d.username || '', 
+        d.date, 
+        d.tokens, 
+        d.model, 
+        d.status, 
+        d.premium ? 'Да' : 'Нет',
+        d.user_message || '',
+        d.assistant_message || ''
+      ])
     ].map(row => row.join(',')).join('\n');
     
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -101,6 +115,11 @@ const Index = () => {
     link.href = URL.createObjectURL(blob);
     link.download = `dialogs_${new Date().toISOString().slice(0,10)}.csv`;
     link.click();
+  };
+
+  const openDialogDetails = (dialog: any) => {
+    setSelectedDialog(dialog);
+    setDialogOpen(true);
   };
 
   if (loading) {
@@ -313,17 +332,32 @@ const Index = () => {
                   <TableHeader>
                     <TableRow className="bg-gradient-to-r from-purple-50 to-pink-50">
                       <TableHead className="font-semibold text-xs sm:text-sm">Польз.</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Username</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Дата</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm">Ток.</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm">Мод.</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Статус</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm"></TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredDialogs.map((dialog: any) => (
                       <TableRow key={dialog.id} className="hover:bg-purple-50/50 transition-colors">
-                        <TableCell className="font-medium text-xs sm:text-sm">{dialog.user}</TableCell>
+                        <TableCell className="font-medium text-xs sm:text-sm">
+                          <div className="flex items-center gap-2">
+                            {dialog.user}
+                            {dialog.premium && <Icon name="Crown" className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {dialog.username ? (
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                              @{dialog.username}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400 text-sm">—</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-muted-foreground text-xs sm:text-sm hidden sm:table-cell">{dialog.date}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 border-purple-300 text-xs">
@@ -331,8 +365,8 @@ const Index = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={`text-xs ${dialog.model === 'GPT-4' ? 'bg-purple-600' : 'bg-pink-600'}`}>
-                            {dialog.model === 'GPT-4' ? '4' : '3.5'}
+                          <Badge className={`text-xs ${dialog.model?.includes('GPT-4') || dialog.model?.includes('gpt-4') ? 'bg-purple-600' : 'bg-pink-600'}`}>
+                            {dialog.model?.includes('mini') ? '4.1-mini' : dialog.model?.includes('GPT-4') ? '4' : '3.5'}
                           </Badge>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
@@ -341,7 +375,14 @@ const Index = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {dialog.premium && <Icon name="Crown" className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => openDialogDetails(dialog)}
+                            className="hover:bg-purple-100"
+                          >
+                            <Icon name="Eye" className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -461,6 +502,96 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
+      {/* Dialog Details Modal */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Icon name="MessageSquare" className="h-5 w-5 text-purple-600" />
+              Детали диалога
+            </DialogTitle>
+            <DialogDescription>
+              {selectedDialog?.username && (
+                <span className="text-blue-600 font-medium">@{selectedDialog.username}</span>
+              )}
+              {' • '}
+              {selectedDialog?.date}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedDialog && (
+            <div className="space-y-4 mt-4">
+              <div className="flex gap-2 flex-wrap">
+                <Badge variant="outline" className="bg-purple-50">
+                  {selectedDialog.user}
+                </Badge>
+                <Badge variant="outline" className="bg-pink-50">
+                  {(selectedDialog.tokens / 1000).toFixed(1)}K токенов
+                </Badge>
+                <Badge className="bg-gradient-to-r from-purple-600 to-pink-600">
+                  {selectedDialog.model}
+                </Badge>
+                {selectedDialog.premium && (
+                  <Badge className="bg-orange-500">
+                    <Icon name="Crown" className="h-3 w-3 mr-1" />
+                    Премиум
+                  </Badge>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                {selectedDialog.user_message && (
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon name="User" className="h-4 w-4 text-blue-600" />
+                      <span className="font-semibold text-blue-900">Вопрос пользователя:</span>
+                    </div>
+                    <p className="text-gray-800 whitespace-pre-wrap">{selectedDialog.user_message}</p>
+                  </div>
+                )}
+
+                {selectedDialog.assistant_message && (
+                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon name="Bot" className="h-4 w-4 text-purple-600" />
+                      <span className="font-semibold text-purple-900">Ответ AI:</span>
+                    </div>
+                    <p className="text-gray-800 whitespace-pre-wrap">{selectedDialog.assistant_message}</p>
+                  </div>
+                )}
+
+                {!selectedDialog.user_message && !selectedDialog.assistant_message && (
+                  <div className="text-center text-gray-500 py-8">
+                    <Icon name="MessageCircle" className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                    <p>Содержимое диалога недоступно</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const text = `Пользователь: ${selectedDialog.user}\nUsername: @${selectedDialog.username || 'N/A'}\nДата: ${selectedDialog.date}\n\nВопрос:\n${selectedDialog.user_message || 'N/A'}\n\nОтвет:\n${selectedDialog.assistant_message || 'N/A'}`;
+                    navigator.clipboard.writeText(text);
+                  }}
+                >
+                  <Icon name="Copy" className="h-4 w-4 mr-2" />
+                  Копировать
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDialogOpen(false)}
+                >
+                  Закрыть
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
