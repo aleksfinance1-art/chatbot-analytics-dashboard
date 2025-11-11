@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -67,7 +68,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         user_data = dict(user)
-        user_data['lastActive'] = user_data['last_active'].strftime('%d.%m.%Y %H:%M')
+        moscow_tz = timezone(timedelta(hours=3))
+        utc_time = user_data['last_active'].replace(tzinfo=timezone.utc)
+        moscow_time = utc_time.astimezone(moscow_tz)
+        user_data['lastActive'] = moscow_time.strftime('%d.%m.%Y %H:%M')
         del user_data['last_active']
         
         cur.execute(
@@ -76,7 +80,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         dialogs = [dict(row) for row in cur.fetchall()]
         
         for dialog in dialogs:
-            dialog['date'] = dialog['created_at'].strftime('%d.%m.%Y %H:%M')
+            utc_time = dialog['created_at'].replace(tzinfo=timezone.utc)
+            moscow_time = utc_time.astimezone(moscow_tz)
+            dialog['date'] = moscow_time.strftime('%d.%m.%Y %H:%M')
             del dialog['created_at']
         
         cur.close()

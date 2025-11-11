@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -79,15 +79,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         cur.execute(dialog_query)
         dialogs = [dict(row) for row in cur.fetchall()]
         
+        moscow_tz = timezone(timedelta(hours=3))
         for dialog in dialogs:
-            dialog['date'] = dialog['created_at'].strftime('%d.%m.%Y %H:%M')
+            utc_time = dialog['created_at'].replace(tzinfo=timezone.utc)
+            moscow_time = utc_time.astimezone(moscow_tz)
+            dialog['date'] = moscow_time.strftime('%d.%m.%Y %H:%M')
             del dialog['created_at']
         
         cur.execute("SELECT id, telegram_id, name, username, email, total_tokens, dialogs_count, premium, last_active FROM users ORDER BY total_tokens DESC")
         users = [dict(row) for row in cur.fetchall()]
         
         for user in users:
-            user['lastActive'] = user['last_active'].strftime('%d.%m.%Y')
+            utc_time = user['last_active'].replace(tzinfo=timezone.utc)
+            moscow_time = utc_time.astimezone(moscow_tz)
+            user['lastActive'] = moscow_time.strftime('%d.%m.%Y')
             del user['last_active']
         
         cur.execute(
