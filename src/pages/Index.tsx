@@ -42,6 +42,7 @@ const modelDistribution = [
 ];
 
 const API_URL = 'https://functions.poehali.dev/228157e5-9d7c-4162-b7f6-c007b6c5fd8d';
+const USER_HISTORY_API = 'https://functions.poehali.dev/762165b8-a04d-4a99-8118-94d450e258c7';
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,6 +54,10 @@ const Index = () => {
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [selectedDialog, setSelectedDialog] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [userHistoryOpen, setUserHistoryOpen] = useState(false);
+  const [userHistory, setUserHistory] = useState<any>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     fetchAnalytics();
@@ -120,6 +125,21 @@ const Index = () => {
   const openDialogDetails = (dialog: any) => {
     setSelectedDialog(dialog);
     setDialogOpen(true);
+  };
+
+  const openUserHistory = async (user: any) => {
+    setSelectedUser(user);
+    setUserHistoryOpen(true);
+    setLoadingHistory(true);
+    try {
+      const response = await fetch(`${USER_HISTORY_API}?telegram_id=${user.telegram_id}`);
+      const data = await response.json();
+      setUserHistory(data);
+    } catch (error) {
+      console.error('Failed to fetch user history:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
   };
 
   if (loading) {
@@ -405,6 +425,7 @@ const Index = () => {
                       <TableHead className="font-semibold text-xs sm:text-sm">Диал.</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Статус</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Активн.</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -429,6 +450,16 @@ const Index = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground text-xs sm:text-sm hidden md:table-cell">{user.lastActive}</TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => openUserHistory(user)}
+                            className="hover:bg-purple-100"
+                          >
+                            <Icon name="MessageSquare" className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -590,6 +621,125 @@ const Index = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* User History Modal */}
+      <Dialog open={userHistoryOpen} onOpenChange={setUserHistoryOpen}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Icon name="MessageSquare" className="h-5 w-5 text-purple-600" />
+              Переписка с пользователем
+            </DialogTitle>
+            <DialogDescription>
+              {selectedUser && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="font-semibold">{selectedUser.name}</span>
+                  {selectedUser.username && (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                      @{selectedUser.username}
+                    </Badge>
+                  )}
+                  {selectedUser.premium && (
+                    <Icon name="Crown" className="h-4 w-4 text-orange-500" />
+                  )}
+                  <span className="text-xs text-gray-500">
+                    • {userHistory?.total_messages || 0} сообщений
+                  </span>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto mt-4 space-y-3 pr-2">
+            {loadingHistory ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Icon name="Loader2" className="h-8 w-8 animate-spin text-purple-600 mb-3" />
+                <p className="text-gray-500">Загрузка истории...</p>
+              </div>
+            ) : userHistory?.dialogs && userHistory.dialogs.length > 0 ? (
+              userHistory.dialogs.map((dialog: any, index: number) => (
+                <div key={dialog.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-500">#{index + 1}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {dialog.date}
+                      </Badge>
+                      <Badge className={`text-xs ${dialog.model?.includes('gpt-4') ? 'bg-purple-600' : 'bg-pink-600'}`}>
+                        {dialog.model}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs bg-purple-50">
+                        {(dialog.tokens / 1000).toFixed(1)}K
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {dialog.user_message ? (
+                      <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon name="User" className="h-3 w-3 text-blue-600" />
+                          <span className="text-xs font-semibold text-blue-900">Вопрос:</span>
+                        </div>
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap">{dialog.user_message}</p>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <p className="text-xs text-gray-400">Вопрос не сохранён</p>
+                      </div>
+                    )}
+                    
+                    {dialog.assistant_message ? (
+                      <div className="bg-purple-50 rounded-lg p-3 border border-purple-100">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Icon name="Bot" className="h-3 w-3 text-purple-600" />
+                          <span className="text-xs font-semibold text-purple-900">Ответ AI:</span>
+                        </div>
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap">{dialog.assistant_message}</p>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <p className="text-xs text-gray-400">Ответ не сохранён</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <Icon name="MessageCircle" className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <p className="text-gray-500">История переписки пуста</p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2 pt-4 border-t mt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (userHistory?.dialogs) {
+                  const text = userHistory.dialogs.map((d: any, i: number) => 
+                    `#${i + 1} [${d.date}]\nВопрос: ${d.user_message || 'N/A'}\nОтвет: ${d.assistant_message || 'N/A'}\n`
+                  ).join('\n---\n\n');
+                  navigator.clipboard.writeText(text);
+                }
+              }}
+              disabled={!userHistory?.dialogs?.length}
+            >
+              <Icon name="Copy" className="h-4 w-4 mr-2" />
+              Копировать всё
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setUserHistoryOpen(false)}
+            >
+              Закрыть
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
