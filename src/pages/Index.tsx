@@ -116,37 +116,39 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
-      <div className="container mx-auto p-6 max-w-7xl">
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between">
+      <div className="container mx-auto p-3 sm:p-6 max-w-7xl">
+        <div className="mb-4 sm:mb-8 animate-fade-in">
+          <div className="flex flex-col gap-3">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-2">
+              <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-1 sm:mb-2">
                 Панель управления AI-советником
               </h1>
-              <p className="text-muted-foreground text-lg">Мониторинг диалогов и расхода токенов в реальном времени</p>
+              <p className="text-muted-foreground text-sm sm:text-lg">Мониторинг диалогов и расхода токенов</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
                 <Button
                   variant={autoRefresh ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setAutoRefresh(!autoRefresh)}
-                  className={autoRefresh ? 'bg-gradient-to-r from-purple-600 to-pink-600' : ''}
+                  className={`flex-1 sm:flex-none ${autoRefresh ? 'bg-gradient-to-r from-purple-600 to-pink-600' : ''}`}
                 >
-                  <Icon name={autoRefresh ? 'Pause' : 'Play'} className="h-4 w-4 mr-2" />
-                  {autoRefresh ? 'Авто' : 'Пауза'}
+                  <Icon name={autoRefresh ? 'Pause' : 'Play'} className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">{autoRefresh ? 'Авто' : 'Пауза'}</span>
+                  <Icon name={autoRefresh ? 'Pause' : 'Play'} className="h-4 w-4 sm:hidden" />
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={fetchAnalytics}
+                  className="flex-1 sm:flex-none"
                 >
-                  <Icon name="RefreshCw" className="h-4 w-4 mr-2" />
-                  Обновить
+                  <Icon name="RefreshCw" className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Обновить</span>
                 </Button>
               </div>
               {lastUpdate && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
                   Обновлено: {lastUpdate.toLocaleTimeString('ru-RU')}
                 </div>
               )}
@@ -154,72 +156,72 @@ const Index = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid bg-white/80 backdrop-blur-sm p-1 shadow-sm">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
-              <Icon name="LayoutDashboard" className="mr-2 h-4 w-4" />
-              Дашборд
+        <Tabs defaultValue="dashboard" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm p-1 shadow-sm">
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs sm:text-sm px-2 sm:px-4">
+              <Icon name="LayoutDashboard" className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Дашборд</span>
             </TabsTrigger>
-            <TabsTrigger value="dialogs" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
-              <Icon name="MessageSquare" className="mr-2 h-4 w-4" />
-              Диалоги
+            <TabsTrigger value="dialogs" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs sm:text-sm px-2 sm:px-4">
+              <Icon name="MessageSquare" className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Диалоги</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
-              <Icon name="Users" className="mr-2 h-4 w-4" />
-              Пользователи
+            <TabsTrigger value="users" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs sm:text-sm px-2 sm:px-4">
+              <Icon name="Users" className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Польз.</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
-              <Icon name="TrendingUp" className="mr-2 h-4 w-4" />
-              Аналитика
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs sm:text-sm px-2 sm:px-4">
+              <Icon name="TrendingUp" className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Аналитика</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dashboard" className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 animate-fade-in">
-              <Card className="p-6 bg-gradient-to-br from-purple-500 to-purple-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium opacity-90">Всего токенов</p>
-                  <Icon name="Zap" className="h-5 w-5 opacity-80" />
+          <TabsContent value="dashboard" className="space-y-4 sm:space-y-6">
+            <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 animate-fade-in">
+              <Card className="p-3 sm:p-6 bg-gradient-to-br from-purple-500 to-purple-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
+                  <p className="text-xs sm:text-sm font-medium opacity-90">Токенов</p>
+                  <Icon name="Zap" className="h-4 w-4 sm:h-5 sm:w-5 opacity-80" />
                 </div>
-                <div className="text-3xl font-bold">{(summary.totalTokens / 1000).toFixed(0)}K</div>
-                <p className="text-xs opacity-75 mt-1">всего использовано</p>
+                <div className="text-xl sm:text-3xl font-bold">{(summary.totalTokens / 1000).toFixed(0)}K</div>
+                <p className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1">использовано</p>
               </Card>
 
-              <Card className="p-6 bg-gradient-to-br from-pink-500 to-pink-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium opacity-90">Активных диалогов</p>
-                  <Icon name="MessageCircle" className="h-5 w-5 opacity-80" />
+              <Card className="p-3 sm:p-6 bg-gradient-to-br from-pink-500 to-pink-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
+                  <p className="text-xs sm:text-sm font-medium opacity-90">Диалогов</p>
+                  <Icon name="MessageCircle" className="h-4 w-4 sm:h-5 sm:w-5 opacity-80" />
                 </div>
-                <div className="text-3xl font-bold">{summary.activeDialogs}</div>
-                <p className="text-xs opacity-75 mt-1">активных сейчас</p>
+                <div className="text-xl sm:text-3xl font-bold">{summary.activeDialogs}</div>
+                <p className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1">активных</p>
               </Card>
 
-              <Card className="p-6 bg-gradient-to-br from-blue-500 to-blue-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium opacity-90">Пользователей</p>
-                  <Icon name="Users" className="h-5 w-5 opacity-80" />
+              <Card className="p-3 sm:p-6 bg-gradient-to-br from-blue-500 to-blue-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
+                  <p className="text-xs sm:text-sm font-medium opacity-90">Пользов.</p>
+                  <Icon name="Users" className="h-4 w-4 sm:h-5 sm:w-5 opacity-80" />
                 </div>
-                <div className="text-3xl font-bold">{summary.totalUsers}</div>
-                <p className="text-xs opacity-75 mt-1">всего пользователей</p>
+                <div className="text-xl sm:text-3xl font-bold">{summary.totalUsers}</div>
+                <p className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1">всего</p>
               </Card>
 
-              <Card className="p-6 bg-gradient-to-br from-orange-500 to-orange-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium opacity-90">Премиум</p>
-                  <Icon name="Crown" className="h-5 w-5 opacity-80" />
+              <Card className="p-3 sm:p-6 bg-gradient-to-br from-orange-500 to-orange-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
+                  <p className="text-xs sm:text-sm font-medium opacity-90">Премиум</p>
+                  <Icon name="Crown" className="h-4 w-4 sm:h-5 sm:w-5 opacity-80" />
                 </div>
-                <div className="text-3xl font-bold">{summary.premiumUsers}</div>
-                <p className="text-xs opacity-75 mt-1">{summary.totalUsers > 0 ? Math.round((summary.premiumUsers / summary.totalUsers) * 100) : 0}% от всех</p>
+                <div className="text-xl sm:text-3xl font-bold">{summary.premiumUsers}</div>
+                <p className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1">{summary.totalUsers > 0 ? Math.round((summary.premiumUsers / summary.totalUsers) * 100) : 0}%</p>
               </Card>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm animate-fade-in">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Icon name="TrendingUp" className="mr-2 h-5 w-5 text-purple-600" />
-                  Расход токенов по дням
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card className="p-4 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm animate-fade-in">
+                <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center">
+                  <Icon name="TrendingUp" className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                  Расход токенов
                 </h3>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={tokenStats}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis dataKey="date" stroke="#666" />
@@ -237,12 +239,12 @@ const Index = () => {
                 </ResponsiveContainer>
               </Card>
 
-              <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm animate-fade-in">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Icon name="Users" className="mr-2 h-5 w-5 text-pink-600" />
-                  Активность пользователей
+              <Card className="p-4 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm animate-fade-in">
+                <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center">
+                  <Icon name="Users" className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-pink-600" />
+                  Активность
                 </h3>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={tokenStats}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis dataKey="date" stroke="#666" />
@@ -269,8 +271,8 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="dialogs" className="space-y-4 animate-fade-in">
-            <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <div className="flex flex-col lg:flex-row gap-4 mb-6">
+            <Card className="p-3 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <div className="flex flex-col gap-2 sm:gap-4 mb-4 sm:mb-6">
                 <div className="flex-1">
                   <Input
                     placeholder="Поиск по пользователю..."
@@ -280,7 +282,7 @@ const Index = () => {
                   />
                 </div>
                 <Select value={filterModel} onValueChange={setFilterModel}>
-                  <SelectTrigger className="w-full lg:w-[180px] bg-white">
+                  <SelectTrigger className="w-full sm:w-[180px] bg-white">
                     <SelectValue placeholder="Модель" />
                   </SelectTrigger>
                   <SelectContent>
@@ -290,7 +292,7 @@ const Index = () => {
                   </SelectContent>
                 </Select>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-full lg:w-[180px] bg-white">
+                  <SelectTrigger className="w-full sm:w-[180px] bg-white">
                     <SelectValue placeholder="Статус" />
                   </SelectTrigger>
                   <SelectContent>
@@ -299,46 +301,47 @@ const Index = () => {
                     <SelectItem value="Завершён">Завершён</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button onClick={exportToCSV} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                <Button onClick={exportToCSV} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 w-full sm:w-auto">
                   <Icon name="Download" className="mr-2 h-4 w-4" />
-                  Экспорт
+                  <span className="hidden sm:inline">Экспорт</span>
+                  <Icon name="Download" className="h-4 w-4 sm:hidden" />
                 </Button>
               </div>
 
-              <div className="rounded-lg border bg-white overflow-hidden">
+              <div className="rounded-lg border bg-white overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gradient-to-r from-purple-50 to-pink-50">
-                      <TableHead className="font-semibold">Пользователь</TableHead>
-                      <TableHead className="font-semibold">Дата</TableHead>
-                      <TableHead className="font-semibold">Токены</TableHead>
-                      <TableHead className="font-semibold">Модель</TableHead>
-                      <TableHead className="font-semibold">Статус</TableHead>
-                      <TableHead className="font-semibold">Премиум</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Польз.</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Дата</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Ток.</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Мод.</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Статус</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredDialogs.map((dialog: any) => (
                       <TableRow key={dialog.id} className="hover:bg-purple-50/50 transition-colors">
-                        <TableCell className="font-medium">{dialog.user}</TableCell>
-                        <TableCell className="text-muted-foreground">{dialog.date}</TableCell>
+                        <TableCell className="font-medium text-xs sm:text-sm">{dialog.user}</TableCell>
+                        <TableCell className="text-muted-foreground text-xs sm:text-sm hidden sm:table-cell">{dialog.date}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 border-purple-300">
-                            {dialog.tokens.toLocaleString()}
+                          <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 border-purple-300 text-xs">
+                            {(dialog.tokens / 1000).toFixed(1)}K
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={dialog.model === 'GPT-4' ? 'bg-purple-600' : 'bg-pink-600'}>
-                            {dialog.model}
+                          <Badge className={`text-xs ${dialog.model === 'GPT-4' ? 'bg-purple-600' : 'bg-pink-600'}`}>
+                            {dialog.model === 'GPT-4' ? '4' : '3.5'}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant={dialog.status === 'Активный' ? 'default' : 'secondary'}>
+                        <TableCell className="hidden md:table-cell">
+                          <Badge variant={dialog.status === 'Активный' ? 'default' : 'secondary'} className="text-xs">
                             {dialog.status}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {dialog.premium && <Icon name="Crown" className="h-4 w-4 text-orange-500" />}
+                          {dialog.premium && <Icon name="Crown" className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -349,42 +352,42 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4 animate-fade-in">
-            <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <h3 className="text-lg font-semibold mb-4">Список пользователей</h3>
-              <div className="rounded-lg border bg-white overflow-hidden">
+            <Card className="p-3 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4">Список пользователей</h3>
+              <div className="rounded-lg border bg-white overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gradient-to-r from-purple-50 to-pink-50">
-                      <TableHead className="font-semibold">Имя</TableHead>
-                      <TableHead className="font-semibold">Email</TableHead>
-                      <TableHead className="font-semibold">Токены</TableHead>
-                      <TableHead className="font-semibold">Диалогов</TableHead>
-                      <TableHead className="font-semibold">Статус</TableHead>
-                      <TableHead className="font-semibold">Последняя активность</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Имя</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm hidden lg:table-cell">Email</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Ток.</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Диал.</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Статус</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Активн.</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {users.map((user: any) => (
                       <TableRow key={user.id} className="hover:bg-purple-50/50 transition-colors">
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            {user.name}
-                            {user.premium && <Icon name="Crown" className="h-4 w-4 text-orange-500" />}
+                        <TableCell className="font-medium text-xs sm:text-sm">
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <span className="truncate max-w-[80px] sm:max-w-none">{user.name}</span>
+                            {user.premium && <Icon name="Crown" className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />}
                           </div>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{user.email || 'Не указан'}</TableCell>
+                        <TableCell className="text-muted-foreground text-xs sm:text-sm hidden lg:table-cell">{user.email || 'Не указан'}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 border-purple-300">
-                            {user.total_tokens.toLocaleString()}
+                          <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 border-purple-300 text-xs">
+                            {(user.total_tokens / 1000).toFixed(0)}K
                           </Badge>
                         </TableCell>
-                        <TableCell>{user.dialogs_count}</TableCell>
-                        <TableCell>
-                          <Badge className={user.premium ? 'bg-gradient-to-r from-orange-500 to-orange-600' : 'bg-gray-500'}>
-                            {user.premium ? 'Премиум' : 'Базовый'}
+                        <TableCell className="text-xs sm:text-sm">{user.dialogs_count}</TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <Badge className={`text-xs ${user.premium ? 'bg-gradient-to-r from-orange-500 to-orange-600' : 'bg-gray-500'}`}>
+                            {user.premium ? 'Прем.' : 'Баз.'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{user.lastActive}</TableCell>
+                        <TableCell className="text-muted-foreground text-xs sm:text-sm hidden md:table-cell">{user.lastActive}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -393,14 +396,14 @@ const Index = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6 animate-fade-in">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Icon name="PieChart" className="mr-2 h-5 w-5 text-blue-600" />
-                  Распределение по моделям
+          <TabsContent value="analytics" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card className="p-4 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center">
+                  <Icon name="PieChart" className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                  Модели
                 </h3>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
                       data={modelDistribution}
@@ -421,15 +424,15 @@ const Index = () => {
                 </ResponsiveContainer>
               </Card>
 
-              <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Icon name="BarChart3" className="mr-2 h-5 w-5 text-green-600" />
-                  Топ пользователей по токенам
+              <Card className="p-4 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center">
+                  <Icon name="BarChart3" className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                  Топ пользователей
                 </h3>
-                <div className="space-y-4">
-                  {[...users].sort((a: any, b: any) => b.total_tokens - a.total_tokens).map((user: any, index: number) => (
-                    <div key={user.id} className="flex items-center gap-4">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
+                <div className="space-y-3 sm:space-y-4">
+                  {[...users].sort((a: any, b: any) => b.total_tokens - a.total_tokens).slice(0, 5).map((user: any, index: number) => (
+                    <div key={user.id} className="flex items-center gap-2 sm:gap-4">
+                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs sm:text-base ${
                         index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
                         index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500' :
                         index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600' :
@@ -437,19 +440,19 @@ const Index = () => {
                       }`}>
                         {index + 1}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium">{user.name}</span>
-                          {user.premium && <Icon name="Crown" className="h-3 w-3 text-orange-500" />}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1 sm:gap-2 mb-1">
+                          <span className="font-medium text-xs sm:text-sm truncate">{user.name}</span>
+                          {user.premium && <Icon name="Crown" className="h-3 w-3 text-orange-500 flex-shrink-0" />}
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
                           <div 
-                            className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all"
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 h-1.5 sm:h-2 rounded-full transition-all"
                             style={{ width: `${users.length > 0 ? Math.min((user.total_tokens / Math.max(...users.map((u: any) => u.total_tokens), 1)) * 100, 100) : 0}%` }}
                           />
                         </div>
                       </div>
-                      <span className="font-semibold text-purple-600">{user.total_tokens.toLocaleString()}</span>
+                      <span className="font-semibold text-purple-600 text-xs sm:text-base whitespace-nowrap">{(user.total_tokens / 1000).toFixed(0)}K</span>
                     </div>
                   ))}
                 </div>
