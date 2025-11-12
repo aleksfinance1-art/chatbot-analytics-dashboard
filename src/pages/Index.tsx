@@ -126,8 +126,8 @@ const Index = () => {
               <p className="text-muted-foreground text-sm sm:text-lg">Мониторинг диалогов и расхода токенов</p>
             </div>
             <Badge variant="secondary" className="w-fit">
-              <Icon name="Database" className="h-3 w-3 mr-1" />
-              Локальное хранилище
+              <Icon name="HardDrive" className="h-3 w-3 mr-1" />
+              Локальное хранилище (обновлено)
             </Badge>
           </div>
         </div>
