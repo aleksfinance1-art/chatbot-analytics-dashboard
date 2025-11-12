@@ -10,14 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import Icon from '@/components/ui/icon';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-const STORAGE_KEY = 'ai_advisor_data';
-
 const getInitialData = () => {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  
   return {
     dialogs: [
       { id: 1, user: 'Алексей М.', username: 'alexey', telegram_id: 123456, date: '07.11.2025 14:32', tokens: 1250, model: 'GPT-4', status: 'Активный', premium: true, user_message: 'Как настроить аналитику?', assistant_message: 'Для настройки аналитики вам нужно...', interaction_type: 'question' },
@@ -63,10 +56,32 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [userHistoryOpen, setUserHistoryOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/228157e5-9d7c-4162-b7f6-c007b6c5fd8d');
+      const result = await response.json();
+      
+      const colors = ['#8B5CF6', '#D946EF', '#F59E0B', '#10B981', '#3B82F6'];
+      result.modelDistribution = result.modelDistribution.map((item: any, index: number) => ({
+        ...item,
+        color: colors[index % colors.length]
+      }));
+      
+      setData(result);
+      setLoading(false);
+    } catch (error) {
+      console.error('Ошибка загрузки данных:', error);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [data]);
+    fetchAnalytics();
+    const interval = setInterval(fetchAnalytics, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const filteredDialogs = data.dialogs.filter((dialog: any) => {
     const matchesSearch = dialog.user.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -126,8 +141,8 @@ const Index = () => {
               <p className="text-muted-foreground text-sm sm:text-lg">Мониторинг диалогов и расхода токенов</p>
             </div>
             <Badge variant="secondary" className="w-fit">
-              <Icon name="HardDrive" className="h-3 w-3 mr-1" />
-              Локальное хранилище (обновлено)
+              <Icon name="Database" className="h-3 w-3 mr-1" />
+              Реальные данные
             </Badge>
           </div>
         </div>
