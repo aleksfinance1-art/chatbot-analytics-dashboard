@@ -75,6 +75,9 @@ const Index = () => {
     try {
       if (!analyticsData) setLoading(true);
       const response = await fetch(API_URL);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
       setAnalyticsData(data);
       setLastUpdate(new Date());
