@@ -35,6 +35,7 @@ const Index = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [userHistoryOpen, setUserHistoryOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   const fetchAnalytics = async () => {
     try {
@@ -48,6 +49,7 @@ const Index = () => {
       }));
       
       setData(result);
+      setLastUpdate(new Date());
       setLoading(false);
     } catch (error) {
       console.error('Ошибка загрузки данных:', error);
@@ -116,15 +118,22 @@ const Index = () => {
               </h1>
               <p className="text-muted-foreground text-sm sm:text-lg">Мониторинг диалогов и расхода токенов</p>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="w-fit">
-                <Icon name="Database" className="h-3 w-3 mr-1" />
-                Реальные данные
-              </Badge>
-              <Button onClick={fetchAnalytics} disabled={loading} variant="outline" size="sm">
-                <Icon name="RefreshCw" className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                Обновить
-              </Button>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="w-fit">
+                  <Icon name="Database" className="h-3 w-3 mr-1" />
+                  Реальные данные
+                </Badge>
+                <Button onClick={fetchAnalytics} disabled={loading} variant="outline" size="sm">
+                  <Icon name="RefreshCw" className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                  Обновить
+                </Button>
+              </div>
+              {lastUpdate && (
+                <span className="text-xs text-muted-foreground">
+                  Обновлено: {lastUpdate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
+              )}
             </div>
           </div>
         </div>
