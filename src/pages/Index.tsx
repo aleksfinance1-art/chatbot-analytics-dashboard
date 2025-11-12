@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +27,7 @@ const getInitialData = () => {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState(getInitialData);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterModel, setFilterModel] = useState('all');
@@ -119,6 +121,10 @@ const Index = () => {
               <p className="text-muted-foreground text-sm sm:text-lg">Мониторинг диалогов и расхода токенов</p>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <Button onClick={() => navigate('/dashboard')} variant="default" size="sm">
+                <Icon name="LayoutDashboard" className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="w-fit">
                   <Icon name="Database" className="h-3 w-3 mr-1" />
