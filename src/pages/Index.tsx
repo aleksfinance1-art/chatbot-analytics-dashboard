@@ -10,91 +10,65 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import Icon from '@/components/ui/icon';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-const mockTokenData = [
-  { date: '01.11', tokens: 45000, users: 120 },
-  { date: '02.11', tokens: 52000, users: 135 },
-  { date: '03.11', tokens: 48000, users: 128 },
-  { date: '04.11', tokens: 61000, users: 145 },
-  { date: '05.11', tokens: 58000, users: 142 },
-  { date: '06.11', tokens: 67000, users: 158 },
-  { date: '07.11', tokens: 73000, users: 165 },
-];
+const STORAGE_KEY = 'ai_advisor_data';
 
-const mockDialogs = [
-  { id: 1, user: 'Алексей М.', date: '07.11.2025 14:32', tokens: 1250, model: 'GPT-4', status: 'Активный', premium: true },
-  { id: 2, user: 'Мария К.', date: '07.11.2025 13:15', tokens: 890, model: 'GPT-3.5', status: 'Активный', premium: false },
-  { id: 3, user: 'Дмитрий Л.', date: '07.11.2025 12:08', tokens: 2340, model: 'GPT-4', status: 'Активный', premium: true },
-  { id: 4, user: 'Елена В.', date: '06.11.2025 18:45', tokens: 670, model: 'GPT-3.5', status: 'Завершён', premium: false },
-  { id: 5, user: 'Иван П.', date: '06.11.2025 16:22', tokens: 1890, model: 'GPT-4', status: 'Завершён', premium: true },
-  { id: 6, user: 'Ольга Н.', date: '06.11.2025 15:10', tokens: 540, model: 'GPT-3.5', status: 'Завершён', premium: false },
-];
-
-const mockUsers = [
-  { id: 1, name: 'Алексей М.', email: 'alexey@example.com', totalTokens: 45600, dialogs: 23, premium: true, lastActive: '07.11.2025' },
-  { id: 2, name: 'Мария К.', email: 'maria@example.com', totalTokens: 12400, dialogs: 8, premium: false, lastActive: '07.11.2025' },
-  { id: 3, name: 'Дмитрий Л.', email: 'dmitry@example.com', totalTokens: 67800, dialogs: 34, premium: true, lastActive: '07.11.2025' },
-  { id: 4, name: 'Елена В.', email: 'elena@example.com', totalTokens: 8900, dialogs: 6, premium: false, lastActive: '06.11.2025' },
-];
-
-const modelDistribution = [
-  { name: 'GPT-4', value: 65, color: '#8B5CF6' },
-  { name: 'GPT-3.5', value: 35, color: '#D946EF' },
-];
-
-const API_URL = 'https://functions.poehali.dev/228157e5-9d7c-4162-b7f6-c007b6c5fd8d';
-const USER_HISTORY_API = 'https://functions.poehali.dev/762165b8-a04d-4a99-8118-94d450e258c7';
+const getInitialData = () => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  
+  return {
+    dialogs: [
+      { id: 1, user: 'Алексей М.', username: 'alexey', telegram_id: 123456, date: '07.11.2025 14:32', tokens: 1250, model: 'GPT-4', status: 'Активный', premium: true, user_message: 'Как настроить аналитику?', assistant_message: 'Для настройки аналитики вам нужно...', interaction_type: 'question' },
+      { id: 2, user: 'Мария К.', username: 'maria_k', telegram_id: 234567, date: '07.11.2025 13:15', tokens: 890, model: 'GPT-3.5', status: 'Активный', premium: false, user_message: 'Помоги с кодом', assistant_message: 'Конечно, вот пример...', interaction_type: 'code' },
+      { id: 3, user: 'Дмитрий Л.', username: 'dmitry', telegram_id: 345678, date: '07.11.2025 12:08', tokens: 2340, model: 'GPT-4', status: 'Активный', premium: true, user_message: 'Объясни архитектуру', assistant_message: 'Архитектура состоит из...', interaction_type: 'explanation' },
+      { id: 4, user: 'Елена В.', username: 'elena_v', telegram_id: 456789, date: '06.11.2025 18:45', tokens: 670, model: 'GPT-3.5', status: 'Завершён', premium: false, user_message: 'Простой вопрос', assistant_message: 'Ответ на ваш вопрос...', interaction_type: 'question' },
+      { id: 5, user: 'Иван П.', username: 'ivan_p', telegram_id: 567890, date: '06.11.2025 16:22', tokens: 1890, model: 'GPT-4', status: 'Завершён', premium: true, user_message: 'Нужна помощь с проектом', assistant_message: 'Давайте разберем...', interaction_type: 'project' },
+    ],
+    users: [
+      { id: 1, name: 'Алексей М.', username: 'alexey', telegram_id: 123456, email: 'alexey@example.com', total_tokens: 45600, dialogs_count: 23, premium: true, lastActive: '07.11.2025' },
+      { id: 2, name: 'Мария К.', username: 'maria_k', telegram_id: 234567, email: 'maria@example.com', total_tokens: 12400, dialogs_count: 8, premium: false, lastActive: '07.11.2025' },
+      { id: 3, name: 'Дмитрий Л.', username: 'dmitry', telegram_id: 345678, email: 'dmitry@example.com', total_tokens: 67800, dialogs_count: 34, premium: true, lastActive: '07.11.2025' },
+      { id: 4, name: 'Елена В.', username: 'elena_v', telegram_id: 456789, email: 'elena@example.com', total_tokens: 8900, dialogs_count: 6, premium: false, lastActive: '06.11.2025' },
+    ],
+    tokenStats: [
+      { date: '01.11', total_tokens: 45000, active_users: 120 },
+      { date: '02.11', total_tokens: 52000, active_users: 135 },
+      { date: '03.11', total_tokens: 48000, active_users: 128 },
+      { date: '04.11', total_tokens: 61000, active_users: 145 },
+      { date: '05.11', total_tokens: 58000, active_users: 142 },
+      { date: '06.11', total_tokens: 67000, active_users: 158 },
+      { date: '07.11', total_tokens: 73000, active_users: 165 },
+    ],
+    modelDistribution: [
+      { name: 'GPT-4', value: 65, count: 850, color: '#8B5CF6' },
+      { name: 'GPT-3.5', value: 35, count: 450, color: '#D946EF' },
+    ],
+    summary: {
+      totalUsers: 4,
+      premiumUsers: 2,
+      activeDialogs: 3,
+      totalTokens: 134700
+    }
+  };
+};
 
 const Index = () => {
+  const [data, setData] = useState(getInitialData);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterModel, setFilterModel] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [loading, setLoading] = useState(true);
-  const [analyticsData, setAnalyticsData] = useState<any>(null);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [selectedDialog, setSelectedDialog] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [userHistoryOpen, setUserHistoryOpen] = useState(false);
-  const [userHistory, setUserHistory] = useState<any>(null);
-  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
-    fetchAnalytics();
-    
-    if (autoRefresh) {
-      const interval = setInterval(() => {
-        fetchAnalytics();
-      }, 30000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [autoRefresh]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, [data]);
 
-  const fetchAnalytics = async () => {
-    try {
-      if (!analyticsData) setLoading(true);
-      const response = await fetch(API_URL);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      const data = await response.json();
-      setAnalyticsData(data);
-      setLastUpdate(new Date());
-    } catch (error) {
-      console.error('Failed to fetch analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const dialogs = analyticsData?.dialogs || [];
-  const users = analyticsData?.users || [];
-  const tokenStats = analyticsData?.tokenStats || [];
-  const modelDistribution = analyticsData?.modelDistribution || [];
-  const summary = analyticsData?.summary || { totalUsers: 0, premiumUsers: 0, activeDialogs: 0, totalTokens: 0 };
-
-  const filteredDialogs = dialogs.filter((dialog: any) => {
+  const filteredDialogs = data.dialogs.filter((dialog: any) => {
     const matchesSearch = dialog.user.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          (dialog.username && dialog.username.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesModel = filterModel === 'all' || dialog.model === filterModel;
@@ -130,31 +104,15 @@ const Index = () => {
     setDialogOpen(true);
   };
 
-  const openUserHistory = async (user: any) => {
+  const openUserHistory = (user: any) => {
     setSelectedUser(user);
     setUserHistoryOpen(true);
-    setLoadingHistory(true);
-    try {
-      const response = await fetch(`${USER_HISTORY_API}?telegram_id=${user.telegram_id}`);
-      const data = await response.json();
-      setUserHistory(data);
-    } catch (error) {
-      console.error('Failed to fetch user history:', error);
-    } finally {
-      setLoadingHistory(false);
-    }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <Icon name="Loader2" className="h-12 w-12 animate-spin text-purple-600 mx-auto mb-4" />
-          <p className="text-lg text-muted-foreground">Загрузка данных...</p>
-        </div>
-      </div>
-    );
-  }
+  const getUserHistory = () => {
+    if (!selectedUser) return [];
+    return data.dialogs.filter((d: any) => d.telegram_id === selectedUser.telegram_id);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
@@ -167,164 +125,149 @@ const Index = () => {
               </h1>
               <p className="text-muted-foreground text-sm sm:text-lg">Мониторинг диалогов и расхода токенов</p>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={autoRefresh ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setAutoRefresh(!autoRefresh)}
-                  className={`flex-1 sm:flex-none ${autoRefresh ? 'bg-gradient-to-r from-purple-600 to-pink-600' : ''}`}
-                >
-                  <Icon name={autoRefresh ? 'Pause' : 'Play'} className="h-4 w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">{autoRefresh ? 'Авто' : 'Пауза'}</span>
-                  <Icon name={autoRefresh ? 'Pause' : 'Play'} className="h-4 w-4 sm:hidden" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={fetchAnalytics}
-                  className="flex-1 sm:flex-none"
-                >
-                  <Icon name="RefreshCw" className="h-4 w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Обновить</span>
-                </Button>
-              </div>
-              {lastUpdate && (
-                <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
-                  Обновлено: {lastUpdate.toLocaleTimeString('ru-RU')}
-                </div>
-              )}
-            </div>
+            <Badge variant="secondary" className="w-fit">
+              <Icon name="Database" className="h-3 w-3 mr-1" />
+              Локальное хранилище
+            </Badge>
           </div>
         </div>
 
-        <Tabs defaultValue="dashboard" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm p-1 shadow-sm">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs sm:text-sm px-2 sm:px-4">
-              <Icon name="LayoutDashboard" className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Дашборд</span>
+        <div className="grid gap-3 sm:gap-6 md:grid-cols-2 lg:grid-cols-4 mb-4 sm:mb-8">
+          <Card className="p-4 sm:p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium opacity-90">Всего пользователей</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{data.summary.totalUsers}</p>
+              </div>
+              <Icon name="Users" className="h-8 w-8 sm:h-10 sm:w-10 opacity-80" />
+            </div>
+          </Card>
+
+          <Card className="p-4 sm:p-6 bg-gradient-to-br from-pink-500 to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium opacity-90">Премиум</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{data.summary.premiumUsers}</p>
+              </div>
+              <Icon name="Crown" className="h-8 w-8 sm:h-10 sm:w-10 opacity-80" />
+            </div>
+          </Card>
+
+          <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium opacity-90">Активных диалогов</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{data.summary.activeDialogs}</p>
+              </div>
+              <Icon name="MessageSquare" className="h-8 w-8 sm:h-10 sm:w-10 opacity-80" />
+            </div>
+          </Card>
+
+          <Card className="p-4 sm:p-6 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium opacity-90">Всего токенов</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{(data.summary.totalTokens / 1000).toFixed(1)}K</p>
+              </div>
+              <Icon name="Zap" className="h-8 w-8 sm:h-10 sm:w-10 opacity-80" />
+            </div>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-white/50 backdrop-blur">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
+              <Icon name="BarChart3" className="h-4 w-4 mr-2" />
+              Обзор
             </TabsTrigger>
-            <TabsTrigger value="dialogs" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs sm:text-sm px-2 sm:px-4">
-              <Icon name="MessageSquare" className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Диалоги</span>
+            <TabsTrigger value="dialogs" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
+              <Icon name="MessageSquare" className="h-4 w-4 mr-2" />
+              Диалоги
             </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs sm:text-sm px-2 sm:px-4">
-              <Icon name="Users" className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Польз.</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-xs sm:text-sm px-2 sm:px-4">
-              <Icon name="TrendingUp" className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Аналитика</span>
+            <TabsTrigger value="users" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
+              <Icon name="Users" className="h-4 w-4 mr-2" />
+              Пользователи
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dashboard" className="space-y-4 sm:space-y-6">
-            <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 animate-fade-in">
-              <Card className="p-3 sm:p-6 bg-gradient-to-br from-purple-500 to-purple-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-1 sm:mb-2">
-                  <p className="text-xs sm:text-sm font-medium opacity-90">Токенов</p>
-                  <Icon name="Zap" className="h-4 w-4 sm:h-5 sm:w-5 opacity-80" />
-                </div>
-                <div className="text-xl sm:text-3xl font-bold">{(summary.totalTokens / 1000).toFixed(0)}K</div>
-                <p className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1">использовано</p>
-              </Card>
-
-              <Card className="p-3 sm:p-6 bg-gradient-to-br from-pink-500 to-pink-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-1 sm:mb-2">
-                  <p className="text-xs sm:text-sm font-medium opacity-90">Диалогов</p>
-                  <Icon name="MessageCircle" className="h-4 w-4 sm:h-5 sm:w-5 opacity-80" />
-                </div>
-                <div className="text-xl sm:text-3xl font-bold">{summary.activeDialogs}</div>
-                <p className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1">активных</p>
-              </Card>
-
-              <Card className="p-3 sm:p-6 bg-gradient-to-br from-blue-500 to-blue-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-1 sm:mb-2">
-                  <p className="text-xs sm:text-sm font-medium opacity-90">Пользов.</p>
-                  <Icon name="Users" className="h-4 w-4 sm:h-5 sm:w-5 opacity-80" />
-                </div>
-                <div className="text-xl sm:text-3xl font-bold">{summary.totalUsers}</div>
-                <p className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1">всего</p>
-              </Card>
-
-              <Card className="p-3 sm:p-6 bg-gradient-to-br from-orange-500 to-orange-700 text-white border-0 shadow-lg hover:scale-105 transition-transform">
-                <div className="flex items-center justify-between mb-1 sm:mb-2">
-                  <p className="text-xs sm:text-sm font-medium opacity-90">Премиум</p>
-                  <Icon name="Crown" className="h-4 w-4 sm:h-5 sm:w-5 opacity-80" />
-                </div>
-                <div className="text-xl sm:text-3xl font-bold">{summary.premiumUsers}</div>
-                <p className="text-[10px] sm:text-xs opacity-75 mt-0.5 sm:mt-1">{summary.totalUsers > 0 ? Math.round((summary.premiumUsers / summary.totalUsers) * 100) : 0}%</p>
-              </Card>
-            </div>
-
-            <div className="grid gap-4 lg:grid-cols-2">
-              <Card className="p-4 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm animate-fade-in">
-                <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center">
-                  <Icon name="TrendingUp" className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-                  Расход токенов
-                </h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={tokenStats}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis dataKey="date" stroke="#666" />
-                    <YAxis stroke="#666" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                        border: 'none', 
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }} 
-                    />
-                    <Line type="monotone" dataKey="total_tokens" stroke="#8B5CF6" strokeWidth={3} dot={{ fill: '#8B5CF6', r: 5 }} />
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+              <Card className="p-4 sm:p-6 bg-white/50 backdrop-blur border-purple-200">
+                <h3 className="text-base sm:text-lg font-semibold mb-4">Динамика токенов</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={data.tokenStats}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="date" stroke="#6b7280" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
+                    <Tooltip contentStyle={{ background: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
+                    <Line type="monotone" dataKey="total_tokens" stroke="#8B5CF6" strokeWidth={2} dot={{ fill: '#8B5CF6', r: 4 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </Card>
 
-              <Card className="p-4 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm animate-fade-in">
-                <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center">
-                  <Icon name="Users" className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-pink-600" />
-                  Активность
-                </h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={tokenStats}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis dataKey="date" stroke="#666" />
-                    <YAxis stroke="#666" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                        border: 'none', 
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }} 
-                    />
-                    <Bar dataKey="active_users" fill="url(#colorGradient)" radius={[8, 8, 0, 0]} />
-                    <defs>
-                      <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#D946EF" />
-                        <stop offset="100%" stopColor="#8B5CF6" />
-                      </linearGradient>
-                    </defs>
+              <Card className="p-4 sm:p-6 bg-white/50 backdrop-blur border-pink-200">
+                <h3 className="text-base sm:text-lg font-semibold mb-4">Активные пользователи</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={data.tokenStats}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                    <XAxis dataKey="date" stroke="#6b7280" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
+                    <Tooltip contentStyle={{ background: 'rgba(255, 255, 255, 0.95)', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
+                    <Bar dataKey="active_users" fill="#D946EF" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </Card>
             </div>
+
+            <Card className="p-4 sm:p-6 bg-white/50 backdrop-blur border-blue-200">
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Распределение по моделям</h3>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={data.modelDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {data.modelDistribution.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-3">
+                  {data.modelDistribution.map((model: any) => (
+                    <div key={model.name} className="flex items-center gap-3">
+                      <div className="w-4 h-4 rounded" style={{ backgroundColor: model.color }} />
+                      <span className="font-medium">{model.name}</span>
+                      <Badge variant="secondary">{model.value}%</Badge>
+                      <span className="text-sm text-muted-foreground">({model.count} диалогов)</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Card>
           </TabsContent>
 
-          <TabsContent value="dialogs" className="space-y-4 animate-fade-in">
-            <Card className="p-3 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <div className="flex flex-col gap-2 sm:gap-4 mb-4 sm:mb-6">
-                <div className="flex-1">
+          <TabsContent value="dialogs" className="space-y-4">
+            <Card className="p-4 sm:p-6 bg-white/50 backdrop-blur">
+              <div className="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6">
+                <div className="relative flex-1">
+                  <Icon name="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Поиск по пользователю..."
+                    placeholder="Поиск по имени или username..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-white"
+                    className="pl-10"
                   />
                 </div>
                 <Select value={filterModel} onValueChange={setFilterModel}>
-                  <SelectTrigger className="w-full sm:w-[180px] bg-white">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Модель" />
                   </SelectTrigger>
                   <SelectContent>
@@ -334,7 +277,7 @@ const Index = () => {
                   </SelectContent>
                 </Select>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="w-full sm:w-[180px] bg-white">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Статус" />
                   </SelectTrigger>
                   <SelectContent>
@@ -343,68 +286,58 @@ const Index = () => {
                     <SelectItem value="Завершён">Завершён</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button onClick={exportToCSV} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 w-full sm:w-auto">
-                  <Icon name="Download" className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Экспорт</span>
-                  <Icon name="Download" className="h-4 w-4 sm:hidden" />
+                <Button onClick={exportToCSV} variant="outline" className="w-full sm:w-auto">
+                  <Icon name="Download" className="h-4 w-4 mr-2" />
+                  CSV
                 </Button>
               </div>
 
-              <div className="rounded-lg border bg-white overflow-x-auto">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gradient-to-r from-purple-50 to-pink-50">
-                      <TableHead className="font-semibold text-xs sm:text-sm">Польз.</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm">Username</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Дата</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm">Ток.</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm">Мод.</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Статус</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm">Действия</TableHead>
+                    <TableRow>
+                      <TableHead>Пользователь</TableHead>
+                      <TableHead className="hidden sm:table-cell">Username</TableHead>
+                      <TableHead className="hidden md:table-cell">Дата</TableHead>
+                      <TableHead>Токены</TableHead>
+                      <TableHead className="hidden lg:table-cell">Модель</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead className="hidden xl:table-cell">Премиум</TableHead>
+                      <TableHead className="text-right">Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredDialogs.map((dialog: any) => (
-                      <TableRow key={dialog.id} className="hover:bg-purple-50/50 transition-colors">
-                        <TableCell className="font-medium text-xs sm:text-sm">
-                          <div className="flex items-center gap-2">
-                            {dialog.user}
-                            {dialog.premium && <Icon name="Crown" className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />}
-                          </div>
-                        </TableCell>
+                      <TableRow key={dialog.id} className="hover:bg-purple-50/50">
+                        <TableCell className="font-medium">{dialog.user}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-muted-foreground">@{dialog.username}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{dialog.date}</TableCell>
                         <TableCell>
-                          {dialog.username ? (
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-                              @{dialog.username}
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-400 text-sm">—</span>
-                          )}
+                          <Badge variant="outline" className="bg-purple-50">
+                            <Icon name="Zap" className="h-3 w-3 mr-1" />
+                            {dialog.tokens}
+                          </Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground text-xs sm:text-sm hidden sm:table-cell">{dialog.date}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 border-purple-300 text-xs">
-                            {(dialog.tokens / 1000).toFixed(1)}K
+                        <TableCell className="hidden lg:table-cell">
+                          <Badge variant={dialog.model === 'GPT-4' ? 'default' : 'secondary'}>
+                            {dialog.model}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={`text-xs ${dialog.model?.includes('GPT-4') || dialog.model?.includes('gpt-4') ? 'bg-purple-600' : 'bg-pink-600'}`}>
-                            {dialog.model?.includes('mini') ? '4.1-mini' : dialog.model?.includes('GPT-4') ? '4' : '3.5'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <Badge variant={dialog.status === 'Активный' ? 'default' : 'secondary'} className="text-xs">
+                          <Badge variant={dialog.status === 'Активный' ? 'default' : 'secondary'}>
                             {dialog.status}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          {dialog.premium && <Icon name="Crown" className="h-4 w-4 text-yellow-500" />}
+                        </TableCell>
+                        <TableCell className="text-right">
                           <Button
-                            size="sm"
                             variant="ghost"
+                            size="sm"
                             onClick={() => openDialogDetails(dialog)}
-                            className="hover:bg-purple-100"
                           >
-                            <Icon name="Eye" className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <Icon name="Eye" className="h-4 w-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -415,52 +348,46 @@ const Index = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="users" className="space-y-4 animate-fade-in">
-            <Card className="p-3 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4">Список пользователей</h3>
-              <div className="rounded-lg border bg-white overflow-x-auto">
+          <TabsContent value="users" className="space-y-4">
+            <Card className="p-4 sm:p-6 bg-white/50 backdrop-blur">
+              <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gradient-to-r from-purple-50 to-pink-50">
-                      <TableHead className="font-semibold text-xs sm:text-sm">Имя</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm hidden lg:table-cell">Email</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm">Ток.</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm">Диал.</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Статус</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Активн.</TableHead>
-                      <TableHead className="font-semibold text-xs sm:text-sm">Действия</TableHead>
+                    <TableRow>
+                      <TableHead>Имя</TableHead>
+                      <TableHead className="hidden sm:table-cell">Username</TableHead>
+                      <TableHead className="hidden md:table-cell">Email</TableHead>
+                      <TableHead>Токены</TableHead>
+                      <TableHead className="hidden lg:table-cell">Диалоги</TableHead>
+                      <TableHead className="hidden xl:table-cell">Последняя активность</TableHead>
+                      <TableHead>Премиум</TableHead>
+                      <TableHead className="text-right">Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((user: any) => (
-                      <TableRow key={user.id} className="hover:bg-purple-50/50 transition-colors">
-                        <TableCell className="font-medium text-xs sm:text-sm">
-                          <div className="flex items-center gap-1 sm:gap-2">
-                            <span className="truncate max-w-[80px] sm:max-w-none">{user.name}</span>
-                            {user.premium && <Icon name="Crown" className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-xs sm:text-sm hidden lg:table-cell">{user.email || 'Не указан'}</TableCell>
+                    {data.users.map((user: any) => (
+                      <TableRow key={user.id} className="hover:bg-pink-50/50">
+                        <TableCell className="font-medium">{user.name}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-muted-foreground">@{user.username}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{user.email}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-gradient-to-r from-purple-100 to-pink-100 border-purple-300 text-xs">
-                            {(user.total_tokens / 1000).toFixed(0)}K
+                          <Badge variant="outline" className="bg-purple-50">
+                            <Icon name="Zap" className="h-3 w-3 mr-1" />
+                            {(user.total_tokens / 1000).toFixed(1)}K
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-xs sm:text-sm">{user.dialogs_count}</TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge className={`text-xs ${user.premium ? 'bg-gradient-to-r from-orange-500 to-orange-600' : 'bg-gray-500'}`}>
-                            {user.premium ? 'Прем.' : 'Баз.'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-xs sm:text-sm hidden md:table-cell">{user.lastActive}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{user.dialogs_count}</TableCell>
+                        <TableCell className="hidden xl:table-cell text-sm text-muted-foreground">{user.lastActive}</TableCell>
                         <TableCell>
+                          {user.premium && <Icon name="Crown" className="h-5 w-5 text-yellow-500" />}
+                        </TableCell>
+                        <TableCell className="text-right">
                           <Button
-                            size="sm"
                             variant="ghost"
+                            size="sm"
                             onClick={() => openUserHistory(user)}
-                            className="hover:bg-purple-100"
                           >
-                            <Icon name="MessageSquare" className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <Icon name="History" className="h-4 w-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -470,279 +397,136 @@ const Index = () => {
               </div>
             </Card>
           </TabsContent>
-
-          <TabsContent value="analytics" className="space-y-4 sm:space-y-6 animate-fade-in">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <Card className="p-4 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center">
-                  <Icon name="PieChart" className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-                  Модели
-                </h3>
-                <ResponsiveContainer width="100%" height={200}>
-                  <PieChart>
-                    <Pie
-                      data={modelDistribution}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}%`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {modelDistribution.map((entry: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={entry.name === 'GPT-4' ? '#8B5CF6' : '#D946EF'} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Card>
-
-              <Card className="p-4 sm:p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                <h3 className="text-sm sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center">
-                  <Icon name="BarChart3" className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                  Топ пользователей
-                </h3>
-                <div className="space-y-3 sm:space-y-4">
-                  {[...users].sort((a: any, b: any) => b.total_tokens - a.total_tokens).slice(0, 5).map((user: any, index: number) => (
-                    <div key={user.id} className="flex items-center gap-2 sm:gap-4">
-                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-white text-xs sm:text-base ${
-                        index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
-                        index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500' :
-                        index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600' :
-                        'bg-gradient-to-r from-purple-400 to-pink-400'
-                      }`}>
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 sm:gap-2 mb-1">
-                          <span className="font-medium text-xs sm:text-sm truncate">{user.name}</span>
-                          {user.premium && <Icon name="Crown" className="h-3 w-3 text-orange-500 flex-shrink-0" />}
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
-                          <div 
-                            className="bg-gradient-to-r from-purple-600 to-pink-600 h-1.5 sm:h-2 rounded-full transition-all"
-                            style={{ width: `${users.length > 0 ? Math.min((user.total_tokens / Math.max(...users.map((u: any) => u.total_tokens), 1)) * 100, 100) : 0}%` }}
-                          />
-                        </div>
-                      </div>
-                      <span className="font-semibold text-purple-600 text-xs sm:text-base whitespace-nowrap">{(user.total_tokens / 1000).toFixed(0)}K</span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            </div>
-          </TabsContent>
         </Tabs>
       </div>
-      {/* Dialog Details Modal */}
+
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Icon name="MessageSquare" className="h-5 w-5 text-purple-600" />
-              Детали диалога
-            </DialogTitle>
+            <DialogTitle>Детали диалога</DialogTitle>
             <DialogDescription>
-              {selectedDialog?.username && (
-                <span className="text-blue-600 font-medium">@{selectedDialog.username}</span>
-              )}
-              {' • '}
-              {selectedDialog?.date}
+              Информация о взаимодействии с пользователем
             </DialogDescription>
           </DialogHeader>
-          
           {selectedDialog && (
-            <div className="space-y-4 mt-4">
-              <div className="flex gap-2 flex-wrap">
-                <Badge variant="outline" className="bg-purple-50">
-                  {selectedDialog.user}
-                </Badge>
-                <Badge variant="outline" className="bg-pink-50">
-                  {(selectedDialog.tokens / 1000).toFixed(1)}K токенов
-                </Badge>
-                <Badge className="bg-gradient-to-r from-purple-600 to-pink-600">
-                  {selectedDialog.model}
-                </Badge>
-                {selectedDialog.premium && (
-                  <Badge className="bg-orange-500">
-                    <Icon name="Crown" className="h-3 w-3 mr-1" />
-                    Премиум
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Пользователь</p>
+                  <p className="text-base font-semibold">{selectedDialog.user}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Username</p>
+                  <p className="text-base">@{selectedDialog.username}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Дата</p>
+                  <p className="text-base">{selectedDialog.date}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Токены</p>
+                  <Badge variant="outline" className="mt-1">
+                    <Icon name="Zap" className="h-3 w-3 mr-1" />
+                    {selectedDialog.tokens}
                   </Badge>
-                )}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Модель</p>
+                  <Badge className="mt-1">{selectedDialog.model}</Badge>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Статус</p>
+                  <Badge variant="secondary" className="mt-1">{selectedDialog.status}</Badge>
+                </div>
               </div>
-
-              <div className="space-y-4">
-                {selectedDialog.user_message && (
-                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon name="User" className="h-4 w-4 text-blue-600" />
-                      <span className="font-semibold text-blue-900">Вопрос пользователя:</span>
-                    </div>
-                    <p className="text-gray-800 whitespace-pre-wrap">{selectedDialog.user_message}</p>
+              
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Сообщение пользователя</p>
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm">{selectedDialog.user_message}</p>
                   </div>
-                )}
-
-                {selectedDialog.assistant_message && (
-                  <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon name="Bot" className="h-4 w-4 text-purple-600" />
-                      <span className="font-semibold text-purple-900">Ответ AI:</span>
-                    </div>
-                    <p className="text-gray-800 whitespace-pre-wrap">{selectedDialog.assistant_message}</p>
+                </div>
+                
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Ответ ассистента</p>
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <p className="text-sm">{selectedDialog.assistant_message}</p>
                   </div>
-                )}
-
-                {!selectedDialog.user_message && !selectedDialog.assistant_message && (
-                  <div className="text-center text-gray-500 py-8">
-                    <Icon name="MessageCircle" className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>Содержимое диалога недоступно</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-2 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const text = `Пользователь: ${selectedDialog.user}\nUsername: @${selectedDialog.username || 'N/A'}\nДата: ${selectedDialog.date}\n\nВопрос:\n${selectedDialog.user_message || 'N/A'}\n\nОтвет:\n${selectedDialog.assistant_message || 'N/A'}`;
-                    navigator.clipboard.writeText(text);
-                  }}
-                >
-                  <Icon name="Copy" className="h-4 w-4 mr-2" />
-                  Копировать
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDialogOpen(false)}
-                >
-                  Закрыть
-                </Button>
+                </div>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* User History Modal */}
       <Dialog open={userHistoryOpen} onOpenChange={setUserHistoryOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Icon name="MessageSquare" className="h-5 w-5 text-purple-600" />
-              Переписка с пользователем
-            </DialogTitle>
+            <DialogTitle>История диалогов пользователя</DialogTitle>
             <DialogDescription>
-              {selectedUser && (
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="font-semibold">{selectedUser.name}</span>
-                  {selectedUser.username && (
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                      @{selectedUser.username}
-                    </Badge>
-                  )}
-                  {selectedUser.premium && (
-                    <Icon name="Crown" className="h-4 w-4 text-orange-500" />
-                  )}
-                  <span className="text-xs text-gray-500">
-                    • {userHistory?.total_messages || 0} сообщений
-                  </span>
-                </div>
-              )}
+              {selectedUser && `Все диалоги пользователя ${selectedUser.name}`}
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="flex-1 overflow-y-auto mt-4 space-y-3 pr-2">
-            {loadingHistory ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Icon name="Loader2" className="h-8 w-8 animate-spin text-purple-600 mb-3" />
-                <p className="text-gray-500">Загрузка истории...</p>
-              </div>
-            ) : userHistory?.dialogs && userHistory.dialogs.length > 0 ? (
-              userHistory.dialogs.map((dialog: any, index: number) => (
-                <div key={dialog.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-gray-500">#{index + 1}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {dialog.date}
-                      </Badge>
-                      <Badge className={`text-xs ${dialog.model?.includes('gpt-4') ? 'bg-purple-600' : 'bg-pink-600'}`}>
-                        {dialog.model}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs bg-purple-50">
-                        {(dialog.tokens / 1000).toFixed(1)}K
-                      </Badge>
-                    </div>
+          {selectedUser && (
+            <div className="space-y-4">
+              <Card className="p-4 bg-gradient-to-r from-purple-50 to-pink-50">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Всего токенов</p>
+                    <p className="text-2xl font-bold">{(selectedUser.total_tokens / 1000).toFixed(1)}K</p>
                   </div>
-                  
-                  <div className="space-y-3">
-                    {dialog.user_message ? (
-                      <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Icon name="User" className="h-3 w-3 text-blue-600" />
-                          <span className="text-xs font-semibold text-blue-900">Вопрос:</span>
-                        </div>
-                        <p className="text-sm text-gray-800 whitespace-pre-wrap">{dialog.user_message}</p>
-                      </div>
-                    ) : (
-                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                        <p className="text-xs text-gray-400">Вопрос не сохранён</p>
-                      </div>
-                    )}
-                    
-                    {dialog.assistant_message ? (
-                      <div className="bg-purple-50 rounded-lg p-3 border border-purple-100">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Icon name="Bot" className="h-3 w-3 text-purple-600" />
-                          <span className="text-xs font-semibold text-purple-900">Ответ AI:</span>
-                        </div>
-                        <p className="text-sm text-gray-800 whitespace-pre-wrap">{dialog.assistant_message}</p>
-                      </div>
-                    ) : (
-                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                        <p className="text-xs text-gray-400">Ответ не сохранён</p>
-                      </div>
-                    )}
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Диалогов</p>
+                    <p className="text-2xl font-bold">{selectedUser.dialogs_count}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Премиум</p>
+                    <p className="text-2xl">{selectedUser.premium ? '👑' : '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Последняя активность</p>
+                    <p className="text-sm font-semibold mt-1">{selectedUser.lastActive}</p>
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <Icon name="MessageCircle" className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500">История переписки пуста</p>
-              </div>
-            )}
-          </div>
+              </Card>
 
-          <div className="flex gap-2 pt-4 border-t mt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (userHistory?.dialogs) {
-                  const text = userHistory.dialogs.map((d: any, i: number) => 
-                    `#${i + 1} [${d.date}]\nВопрос: ${d.user_message || 'N/A'}\nОтвет: ${d.assistant_message || 'N/A'}\n`
-                  ).join('\n---\n\n');
-                  navigator.clipboard.writeText(text);
-                }
-              }}
-              disabled={!userHistory?.dialogs?.length}
-            >
-              <Icon name="Copy" className="h-4 w-4 mr-2" />
-              Копировать всё
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setUserHistoryOpen(false)}
-            >
-              Закрыть
-            </Button>
-          </div>
+              <div className="space-y-3">
+                {getUserHistory().map((dialog: any) => (
+                  <Card key={dialog.id} className="p-4 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={dialog.model === 'GPT-4' ? 'default' : 'secondary'}>
+                            {dialog.model}
+                          </Badge>
+                          <Badge variant="outline">
+                            <Icon name="Zap" className="h-3 w-3 mr-1" />
+                            {dialog.tokens}
+                          </Badge>
+                          <Badge variant={dialog.status === 'Активный' ? 'default' : 'secondary'}>
+                            {dialog.status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{dialog.date}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="p-3 bg-blue-50 rounded">
+                        <p className="text-sm font-medium text-blue-900 mb-1">Вопрос:</p>
+                        <p className="text-sm">{dialog.user_message}</p>
+                      </div>
+                      <div className="p-3 bg-purple-50 rounded">
+                        <p className="text-sm font-medium text-purple-900 mb-1">Ответ:</p>
+                        <p className="text-sm">{dialog.assistant_message}</p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
