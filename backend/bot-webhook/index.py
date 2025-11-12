@@ -1,12 +1,22 @@
 import json
 import os
+import time
 from datetime import datetime
 from typing import Dict, Any
 import psycopg2
-from psycopg2.extras import RealDictCursor
+from psycopg2.extras import RealDictCursor, Json
 
 def get_db_connection():
     return psycopg2.connect(os.environ['DATABASE_URL'])
+
+def log_event(cur, user_id, event_type, event_data, response_time_ms=None, success=True, error_message=None):
+    '''Логирует событие в таблицу event_logs'''
+    cur.execute(
+        "INSERT INTO event_logs (user_id, event_type, event_data, response_time_ms, success, error_message) VALUES (" + 
+        str(user_id) + ", '" + event_type + "', '" + json.dumps(event_data).replace("'", "''") + "', " + 
+        (str(response_time_ms) if response_time_ms else 'NULL') + ", " + str(success) + ", " + 
+        ("'" + error_message.replace("'", "''") + "'" if error_message else 'NULL') + ")"
+    )
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -31,6 +41,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         }
     
     if method == 'POST':
+        start_time = time.time()
         body_data = json.loads(event.get('body', '{}'))
         
         telegram_id = body_data.get('telegram_id')
@@ -97,6 +108,42 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cur.execute(
                 "INSERT INTO token_stats (date, total_tokens, active_users) VALUES ('" + str(today) + "', " + str(tokens) + ", " + str(active_count) + ")"
+            )
+        
+        response_time_ms = int((time.time() - start_time) * 1000)
+        
+        log_event(
+            cur, 
+            user_id, 
+            'message_received',
+            {
+                'user_message': user_message[:100] if user_message else None,
+                'assistant_message': assistant_message[:100] if assistant_message else None,
+                'tokens': tokens,
+                'model': model
+            },
+            response_time_ms=response_time_ms,
+            success=True
+        )
+        
+        if user_message:
+            cur.execute(
+                "INSERT INTO messages (user_id, message, sender, timestamp) VALUES (" + 
+                str(telegram_id) + ", '" + user_message.replace("'", "''") + "', 'user', '" + 
+                datetime.now().isoformat() + "')"
+            )
+        
+        if assistant_message:
+            cur.execute(
+                "INSERT INTO messages (user_id, message, sender, timestamp) VALUES (" + 
+                str(telegram_id) + ", '" + assistant_message.replace("'", "''") + "', 'bot', '" + 
+                datetime.now().isoformat() + "')"
+            )
+        
+        if tokens > 0:
+            cur.execute(
+                "INSERT INTO costs (user_id, tokens_used, date) VALUES (" + 
+                str(telegram_id) + ", " + str(tokens) + ", '" + str(datetime.now().date()) + "')"
             )
         
         conn.commit()
