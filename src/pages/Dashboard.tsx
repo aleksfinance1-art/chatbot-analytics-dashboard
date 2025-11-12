@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface DashboardData {
   dau: number;
@@ -12,6 +13,13 @@ interface DashboardData {
   csat: number;
   nps: number;
   costWeek: number;
+}
+
+interface HistoryPoint {
+  time: string;
+  dau: number;
+  cost: number;
+  quality: number;
 }
 
 export default function Dashboard() {
@@ -24,6 +32,7 @@ export default function Dashboard() {
     nps: 0,
     costWeek: 0
   });
+  const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
@@ -40,7 +49,7 @@ export default function Dashboard() {
       const costsData = await costsRes.json();
       const qualityData = await qualityRes.json();
 
-      setData({
+      const newData = {
         dau: dauData.dau || 0,
         messagesCount: dauData.dau * 15,
         costToday: costsData.cost_usd || 0,
@@ -48,8 +57,24 @@ export default function Dashboard() {
         csat: 4.2,
         nps: 8,
         costWeek: (costsData.cost_usd || 0) * 7
+      };
+
+      setData(newData);
+
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      
+      setHistory(prev => {
+        const newHistory = [...prev, {
+          time: timeString,
+          dau: newData.dau,
+          cost: newData.costToday,
+          quality: newData.quality
+        }];
+        return newHistory.slice(-10);
       });
-      setLastUpdate(new Date());
+
+      setLastUpdate(now);
       setLoading(false);
     } catch (error) {
       console.error('Ошибка загрузки данных:', error);
@@ -231,6 +256,115 @@ export default function Dashboard() {
                   </>
                 )}
               </Badge>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="Users" className="h-5 w-5" />
+                Динамика активных пользователей
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {history.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={history}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                    <XAxis dataKey="time" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="dau" stroke="#3b82f6" strokeWidth={2} dot={{ fill: '#3b82f6' }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                  Нет данных. Нажмите "Обновить" для сбора истории.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="DollarSign" className="h-5 w-5" />
+                Расход на AI ($)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {history.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={history}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                    <XAxis dataKey="time" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="cost" stroke="#f59e0b" strokeWidth={2} dot={{ fill: '#f59e0b' }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                  Нет данных. Нажмите "Обновить" для сбора истории.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="TrendingUp" className="h-5 w-5" />
+                Качество ответов (%)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {history.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={history}>
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
+                    <XAxis dataKey="time" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="quality" stroke="#10b981" strokeWidth={2} dot={{ fill: '#10b981' }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                  Нет данных. Нажмите "Обновить" для сбора истории.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="Activity" className="h-5 w-5" />
+                История обновлений
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                {history.length > 0 ? (
+                  history.slice().reverse().map((point, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm p-2 rounded-lg bg-secondary/50">
+                      <span className="font-medium">{point.time}</span>
+                      <div className="flex gap-4 text-muted-foreground">
+                        <span>👥 {point.dau}</span>
+                        <span>💰 ${point.cost.toFixed(2)}</span>
+                        <span>⭐ {point.quality.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+                    Нет данных. Нажмите "Обновить" для сбора истории.
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
