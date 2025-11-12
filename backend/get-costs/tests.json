@@ -1,0 +1,22 @@
+{
+  "tests": [
+    {
+      "name": "Test costs endpoint",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "date": "string",
+        "total_tokens": "number",
+        "cost_usd": "number"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test OPTIONS for CORS",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}

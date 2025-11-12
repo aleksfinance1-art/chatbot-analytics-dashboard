@@ -1,4 +1,8 @@
 {
+  "get-messages": "https://functions.poehali.dev/c050d07d-8e0e-4409-9376-33f08b6c5459",
+  "get-quality": "https://functions.poehali.dev/7f45dbc2-cc4a-4655-b631-008f4b33ed2e",
+  "get-costs": "https://functions.poehali.dev/ca297a29-f33a-4ca2-9b92-0ad7f9892e22",
+  "get-dau": "https://functions.poehali.dev/b5b5bbe5-ce49-4ed2-bee8-59b632ccdaaa",
   "auto-backup": "https://functions.poehali.dev/e77e8a6b-0100-423e-b9ad-c5d44c054484",
   "get-user-history": "https://functions.poehali.dev/762165b8-a04d-4a99-8118-94d450e258c7",
   "get-analytics": "https://functions.poehali.dev/228157e5-9d7c-4162-b7f6-c007b6c5fd8d",
