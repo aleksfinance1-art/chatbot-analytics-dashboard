@@ -12,37 +12,15 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 
 const getInitialData = () => {
   return {
-    dialogs: [
-      { id: 1, user: 'Алексей М.', username: 'alexey', telegram_id: 123456, date: '07.11.2025 14:32', tokens: 1250, model: 'GPT-4', status: 'Активный', premium: true, user_message: 'Как настроить аналитику?', assistant_message: 'Для настройки аналитики вам нужно...', interaction_type: 'question' },
-      { id: 2, user: 'Мария К.', username: 'maria_k', telegram_id: 234567, date: '07.11.2025 13:15', tokens: 890, model: 'GPT-3.5', status: 'Активный', premium: false, user_message: 'Помоги с кодом', assistant_message: 'Конечно, вот пример...', interaction_type: 'code' },
-      { id: 3, user: 'Дмитрий Л.', username: 'dmitry', telegram_id: 345678, date: '07.11.2025 12:08', tokens: 2340, model: 'GPT-4', status: 'Активный', premium: true, user_message: 'Объясни архитектуру', assistant_message: 'Архитектура состоит из...', interaction_type: 'explanation' },
-      { id: 4, user: 'Елена В.', username: 'elena_v', telegram_id: 456789, date: '06.11.2025 18:45', tokens: 670, model: 'GPT-3.5', status: 'Завершён', premium: false, user_message: 'Простой вопрос', assistant_message: 'Ответ на ваш вопрос...', interaction_type: 'question' },
-      { id: 5, user: 'Иван П.', username: 'ivan_p', telegram_id: 567890, date: '06.11.2025 16:22', tokens: 1890, model: 'GPT-4', status: 'Завершён', premium: true, user_message: 'Нужна помощь с проектом', assistant_message: 'Давайте разберем...', interaction_type: 'project' },
-    ],
-    users: [
-      { id: 1, name: 'Алексей М.', username: 'alexey', telegram_id: 123456, email: 'alexey@example.com', total_tokens: 45600, dialogs_count: 23, premium: true, lastActive: '07.11.2025' },
-      { id: 2, name: 'Мария К.', username: 'maria_k', telegram_id: 234567, email: 'maria@example.com', total_tokens: 12400, dialogs_count: 8, premium: false, lastActive: '07.11.2025' },
-      { id: 3, name: 'Дмитрий Л.', username: 'dmitry', telegram_id: 345678, email: 'dmitry@example.com', total_tokens: 67800, dialogs_count: 34, premium: true, lastActive: '07.11.2025' },
-      { id: 4, name: 'Елена В.', username: 'elena_v', telegram_id: 456789, email: 'elena@example.com', total_tokens: 8900, dialogs_count: 6, premium: false, lastActive: '06.11.2025' },
-    ],
-    tokenStats: [
-      { date: '01.11', total_tokens: 45000, active_users: 120 },
-      { date: '02.11', total_tokens: 52000, active_users: 135 },
-      { date: '03.11', total_tokens: 48000, active_users: 128 },
-      { date: '04.11', total_tokens: 61000, active_users: 145 },
-      { date: '05.11', total_tokens: 58000, active_users: 142 },
-      { date: '06.11', total_tokens: 67000, active_users: 158 },
-      { date: '07.11', total_tokens: 73000, active_users: 165 },
-    ],
-    modelDistribution: [
-      { name: 'GPT-4', value: 65, count: 850, color: '#8B5CF6' },
-      { name: 'GPT-3.5', value: 35, count: 450, color: '#D946EF' },
-    ],
+    dialogs: [],
+    users: [],
+    tokenStats: [],
+    modelDistribution: [],
     summary: {
-      totalUsers: 4,
-      premiumUsers: 2,
-      activeDialogs: 3,
-      totalTokens: 134700
+      totalUsers: 0,
+      premiumUsers: 0,
+      activeDialogs: 0,
+      totalTokens: 0
     }
   };
 };
