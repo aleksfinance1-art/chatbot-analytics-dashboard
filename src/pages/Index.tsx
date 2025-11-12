@@ -79,8 +79,6 @@ const Index = () => {
 
   useEffect(() => {
     fetchAnalytics();
-    const interval = setInterval(fetchAnalytics, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const filteredDialogs = data.dialogs.filter((dialog: any) => {
@@ -133,17 +131,23 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
       <div className="container mx-auto p-3 sm:p-6 max-w-7xl">
         <div className="mb-4 sm:mb-8 animate-fade-in">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-1 sm:mb-2">
                 Панель управления AI-советником
               </h1>
               <p className="text-muted-foreground text-sm sm:text-lg">Мониторинг диалогов и расхода токенов</p>
             </div>
-            <Badge variant="secondary" className="w-fit">
-              <Icon name="Database" className="h-3 w-3 mr-1" />
-              Реальные данные
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="w-fit">
+                <Icon name="Database" className="h-3 w-3 mr-1" />
+                Реальные данные
+              </Badge>
+              <Button onClick={fetchAnalytics} disabled={loading} variant="outline" size="sm">
+                <Icon name="RefreshCw" className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Обновить
+              </Button>
+            </div>
           </div>
         </div>
 
